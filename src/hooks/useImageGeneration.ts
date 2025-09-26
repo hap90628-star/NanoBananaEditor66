@@ -76,7 +76,8 @@ export const useImageGeneration = () => {
       setIsGenerating(false);
     },
     onError: (error) => {
-      console.error('Generation failed:', error);
+      console.error('Generation failed:', error.message);
+      // Don't throw a generic error - let the specific error from the service propagate
       setIsGenerating(false);
     }
   });
