@@ -1,12 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { Textarea } from './ui/Textarea';
 import { Button } from './ui/Button';
+import { Input } from './ui/Input';
 import { useAppStore } from '../store/useAppStore';
 import { useImageGeneration, useImageEditing } from '../hooks/useImageGeneration';
-import { Upload, Wand2, Edit3, MousePointer, HelpCircle, Menu, ChevronDown, ChevronRight, RotateCcw } from 'lucide-react';
+import { Upload, Wand2, Edit3, MousePointer, HelpCircle, Menu, ChevronDown, ChevronRight, RotateCcw, Key, CheckCircle, XCircle } from 'lucide-react';
 import { blobToBase64 } from '../utils/imageUtils';
 import { PromptHints } from './PromptHints';
 import { cn } from '../utils/cn';
+import { geminiService } from '../services/geminiService';
 
 export const PromptComposer: React.FC = () => {
   const {
@@ -39,6 +41,9 @@ export const PromptComposer: React.FC = () => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showHintsModal, setShowHintsModal] = useState(false);
+  const [apiKey, setApiKey] = useState(import.meta.env.VITE_GEMINI_API_KEY || '');
+  const [isTestingApiKey, setIsTestingApiKey] = useState(false);
+  const [apiKeyStatus, setApiKeyStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleGenerate = () => {
@@ -102,6 +107,29 @@ export const PromptComposer: React.FC = () => {
     setSeed(null);
     setTemperature(0.7);
     setShowClearConfirm(false);
+  };
+
+  const testApiKey = async () => {
+    if (!apiKey.trim()) {
+      setApiKeyStatus('invalid');
+      return;
+    }
+
+    setIsTestingApiKey(true);
+    setApiKeyStatus('idle');
+
+    try {
+      // Test the API key with a simple request
+      await geminiService.testApiKey(apiKey);
+      setApiKeyStatus('valid');
+      
+      // Update environment variable (this only works for the current session)
+      import.meta.env.VITE_GEMINI_API_KEY = apiKey;
+    } catch (error) {
+      setApiKeyStatus('invalid');
+    } finally {
+      setIsTestingApiKey(false);
+    }
   };
 
   const tools = [
@@ -292,6 +320,81 @@ export const PromptComposer: React.FC = () => {
           </>
         )}
       </Button>
+
+      {/* API Key Configuration */}
+      <div className="p-4 bg-gray-900 rounded-lg border border-gray-700">
+        <div className="flex items-center mb-3">
+          <Key className="h-4 w-4 text-gray-400 mr-2" />
+          <h4 className="text-sm font-medium text-gray-300">API Key Configuration</h4>
+        </div>
+        
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-gray-400 mb-2 block">
+              Gemini API Key
+            </label>
+            <div className="flex space-x-2">
+              <Input
+                type="password"
+                value={apiKey}
+                onChange={(e) => {
+                  setApiKey(e.target.value);
+                  setApiKeyStatus('idle');
+                }}
+                placeholder="Enter your Gemini API key"
+                className="flex-1 text-xs"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={testApiKey}
+                disabled={isTestingApiKey || !apiKey.trim()}
+                className="flex-shrink-0"
+              >
+                {isTestingApiKey ? (
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-400" />
+                ) : (
+                  'Test'
+                )}
+              </Button>
+            </div>
+          </div>
+          
+          {/* API Key Status */}
+          {apiKeyStatus !== 'idle' && (
+            <div className={cn(
+              'flex items-center text-xs p-2 rounded',
+              apiKeyStatus === 'valid' 
+                ? 'bg-green-900/30 text-green-400 border border-green-700' 
+                : 'bg-red-900/30 text-red-400 border border-red-700'
+            )}>
+              {apiKeyStatus === 'valid' ? (
+                <>
+                  <CheckCircle className="h-3 w-3 mr-2" />
+                  API key is valid and ready to use
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-3 w-3 mr-2" />
+                  Invalid API key. Please check your key and try again.
+                </>
+              )}
+            </div>
+          )}
+          
+          <p className="text-xs text-gray-500">
+            Get your API key from{' '}
+            <a
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-yellow-400 hover:text-yellow-300 underline"
+            >
+              Google AI Studio
+            </a>
+          </p>
+        </div>
+      </div>
 
       {/* Advanced Controls */}
       <div>

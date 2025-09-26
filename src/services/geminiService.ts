@@ -31,6 +31,23 @@ export interface SegmentationRequest {
 }
 
 export class GeminiService {
+  async testApiKey(apiKey: string): Promise<boolean> {
+    try {
+      const testGenAI = new GoogleGenAI({ apiKey });
+      
+      // Make a minimal request to test the API key
+      const response = await testGenAI.models.generateContent({
+        model: "gemini-2.5-flash-image-preview",
+        contents: [{ text: "Test" }],
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('API key test failed:', error);
+      throw new Error('Invalid API key');
+    }
+  }
+
   async generateImage(request: GenerationRequest): Promise<string[]> {
     if (!API_KEY || API_KEY === 'your_actual_api_key_here') {
       throw new Error('Gemini API key is not configured. Please add your API key to the .env file.');
