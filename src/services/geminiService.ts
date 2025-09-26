@@ -1,7 +1,12 @@
 import { GoogleGenAI } from '@google/genai';
 
 // Note: In production, this should be handled via a backend proxy
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'demo-key';
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!API_KEY || API_KEY === 'your_actual_api_key_here') {
+  console.error('Gemini API key is missing or invalid. Please set VITE_GEMINI_API_KEY in your .env file.');
+}
+
 const genAI = new GoogleGenAI({ apiKey: API_KEY });
 
 export interface GenerationRequest {
@@ -27,6 +32,10 @@ export interface SegmentationRequest {
 
 export class GeminiService {
   async generateImage(request: GenerationRequest): Promise<string[]> {
+    if (!API_KEY || API_KEY === 'your_actual_api_key_here') {
+      throw new Error('Gemini API key is not configured. Please add your API key to the .env file.');
+    }
+
     try {
       const contents: any[] = [{ text: request.prompt }];
       
@@ -63,6 +72,10 @@ export class GeminiService {
   }
 
   async editImage(request: EditRequest): Promise<string[]> {
+    if (!API_KEY || API_KEY === 'your_actual_api_key_here') {
+      throw new Error('Gemini API key is not configured. Please add your API key to the .env file.');
+    }
+
     try {
       const contents = [
         { text: this.buildEditPrompt(request) },
@@ -116,6 +129,10 @@ export class GeminiService {
   }
 
   async segmentImage(request: SegmentationRequest): Promise<any> {
+    if (!API_KEY || API_KEY === 'your_actual_api_key_here') {
+      throw new Error('Gemini API key is not configured. Please add your API key to the .env file.');
+    }
+
     try {
       const prompt = [
         { text: `Analyze this image and create a segmentation mask for: ${request.query}
