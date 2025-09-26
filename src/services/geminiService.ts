@@ -67,6 +67,24 @@ export class GeminiService {
       return images;
     } catch (error) {
       console.error('Error generating image:', error);
+      
+      // Handle specific API errors with helpful messages
+      if (error && typeof error === 'object' && 'error' in error) {
+        const apiError = error.error as any;
+        
+        if (apiError?.code === 429 || apiError?.status === 'RESOURCE_EXHAUSTED') {
+          throw new Error('API quota exceeded. Please check your Google AI Studio billing and quota limits, or try again later. For production use, consider implementing a backend proxy to manage API calls.');
+        }
+        
+        if (apiError?.code === 400 || apiError?.status === 'INVALID_ARGUMENT') {
+          throw new Error('Invalid API request. Please check your API key configuration and try again.');
+        }
+        
+        if (apiError?.code === 401 || apiError?.status === 'UNAUTHENTICATED') {
+          throw new Error('Authentication failed. Please verify your API key is valid and has the necessary permissions.');
+        }
+      }
+      
       throw new Error('Failed to generate image. Please try again.');
     }
   }
@@ -124,6 +142,24 @@ export class GeminiService {
       return images;
     } catch (error) {
       console.error('Error editing image:', error);
+      
+      // Handle specific API errors with helpful messages
+      if (error && typeof error === 'object' && 'error' in error) {
+        const apiError = error.error as any;
+        
+        if (apiError?.code === 429 || apiError?.status === 'RESOURCE_EXHAUSTED') {
+          throw new Error('API quota exceeded. Please check your Google AI Studio billing and quota limits, or try again later. For production use, consider implementing a backend proxy to manage API calls.');
+        }
+        
+        if (apiError?.code === 400 || apiError?.status === 'INVALID_ARGUMENT') {
+          throw new Error('Invalid API request. Please check your API key configuration and try again.');
+        }
+        
+        if (apiError?.code === 401 || apiError?.status === 'UNAUTHENTICATED') {
+          throw new Error('Authentication failed. Please verify your API key is valid and has the necessary permissions.');
+        }
+      }
+      
       throw new Error('Failed to edit image. Please try again.');
     }
   }
@@ -166,6 +202,24 @@ Only segment the specific object or region requested. The mask should be a binar
       return JSON.parse(responseText);
     } catch (error) {
       console.error('Error segmenting image:', error);
+      
+      // Handle specific API errors with helpful messages
+      if (error && typeof error === 'object' && 'error' in error) {
+        const apiError = error.error as any;
+        
+        if (apiError?.code === 429 || apiError?.status === 'RESOURCE_EXHAUSTED') {
+          throw new Error('API quota exceeded. Please check your Google AI Studio billing and quota limits, or try again later. For production use, consider implementing a backend proxy to manage API calls.');
+        }
+        
+        if (apiError?.code === 400 || apiError?.status === 'INVALID_ARGUMENT') {
+          throw new Error('Invalid API request. Please check your API key configuration and try again.');
+        }
+        
+        if (apiError?.code === 401 || apiError?.status === 'UNAUTHENTICATED') {
+          throw new Error('Authentication failed. Please verify your API key is valid and has the necessary permissions.');
+        }
+      }
+      
       throw new Error('Failed to segment image. Please try again.');
     }
   }
